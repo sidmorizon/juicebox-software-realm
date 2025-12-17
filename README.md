@@ -41,11 +41,23 @@ Usage of jb-sw-realm:
 
 Compile the Juicebox Software Realm with `go build ./cmd/jb-sw-realm` or compile and run with `go run ./cmd/jb-sw-realm/`.
 
-To quickly spin up a local realm for testing, you can run:
+To quickly spin up a local realm for testing with the test-client (EdDSA/ed25519), you can run:
 
- ```sh
-TENANT_SECRETS='{"test":{"1":"an-auth-token-key"}}' jb-sw-realm -port 8080
- ```
+```sh
+# Using Makefile (recommended for test-client)
+make dev
+
+# Or manually with EdDSA public key (for use with test-client)
+TENANT_SECRETS='{"JuiceBoxRealmTenantOneKey":{"1":"{\"data\":\"302a300506032b6570032100490e56544289add3dd02345355de2b1bb5193e81b055f7749f6a703ed8a2011a\",\"encoding\":\"Hex\",\"algorithm\":\"Edwards25519\"}"}}' jb-sw-realm -port 8580
+```
+
+For simple HMAC-SHA256 (HS256) authentication (not compatible with test-client's AuthTokenGenerator):
+
+```sh
+TENANT_SECRETS='{"JuiceBoxRealmTenantOneKey":{"1":"an-auth-token-key"}}' jb-sw-realm -port 8080
+```
+
+**Note:** The test-client uses `AuthTokenGenerator` from juicebox-sdk which signs tokens with EdDSA (ed25519). The server needs the corresponding public key in PKIX hex format. Run `node test-client/generate-keys.js` to generate a matching key pair.
 
 ## Running a Realm
 
@@ -181,7 +193,7 @@ The available configuration variables, beyond the args on the `jb-sw-realm` bina
 * **GCP_PROJECT_ID**: The id of your project in GCP. This is only read when using the `GCP` provider.
 * **AWS_REGION_NAME**: The name of your region in AWS. This is only read when using the `AWS` provider.
 * **MONGO_URL**: The fully qualified URL to your mongo database, such as `mongodb://username:password@host:port/database`. This is only read when using the `Mongo` provider.
-* **TENANT_SECRETS**: A list of versioned tenant secrets in the form of `'{"test":{"1":"an-auth-token-key"}}'`. This is only used if the `memory` provider is specified.
+* **TENANT_SECRETS**: A list of versioned tenant secrets in the form of `'{"<tenant>":{"<version>":"<auth-key-json>"}}'`. This is only used if the `memory` provider is specified.
 * **OPENTELEMETRY_ENDPOINT**: The URL to an OpenTelemetry gRPC service where tracing data should be sent.
 
 ## Metrics and Tracing

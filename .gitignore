@@ -2,3 +2,13 @@
 .elasticbeanstalk/*
 !.elasticbeanstalk/*.cfg.yml
 !.elasticbeanstalk/*.global.yml
+
+# Memory store persistent data
+.realm-data.json
+.realm-data-*.json
+
+node_modules/
+
+node_modules/
+dist/
+.vite/

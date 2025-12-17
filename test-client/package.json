@@ -1,0 +1,27 @@
+{
+  "name": "juicebox-test-client",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "yarn && vite --port 8006",
+    "server": "yarn && node server.js",
+    "dev:full": "concurrently \"yarn server\" \"yarn dev\"",
+    "build": "yarn && vite build",
+    "preview": "yarn && vite preview"
+  },
+  "dependencies": {
+    "juicebox-sdk": "^0.3.0",
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "jose": "^5.2.0",
+    "google-auth-library": "^9.4.1"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0",
+    "vite-plugin-wasm": "^3.3.0",
+    "vite-plugin-top-level-await": "^1.4.4",
+    "concurrently": "^8.2.2"
+  }
+}
+
