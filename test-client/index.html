@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Juicebox Realm Test Client</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Google Identity Services -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🧃 Juicebox Realm Tester</h1>
+      <p class="subtitle">Test client for local Juicebox Software Realm instances (using juicebox-sdk)</p>
+    </header>
+
+    <div class="main-grid">
+      <!-- Realms Configuration -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">🌐</div>
+          <h2 class="card-title">Realm Instances</h2>
+        </div>
+
+        <div class="sdk-status loading" id="sdk-status">
+          ⏳ Loading juicebox-sdk...
+        </div>
+        
+        <div class="quick-actions">
+          <button class="btn-secondary" onclick="checkAllRealms()">
+            🔍 Check All
+          </button>
+          <button class="btn-secondary" onclick="resetConfig()">
+            🔄 Reset Config
+          </button>
+        </div>
+
+        <div class="realms-list" id="realms-list">
+          <!-- Realms will be rendered here -->
+        </div>
+
+        <div class="input-group" style="margin-top: 1rem;">
+          <label>Configuration (JSON)</label>
+          <textarea id="config-json" rows="10" placeholder="Loading configuration..."></textarea>
+        </div>
+      </div>
+
+      <!-- Auth & Operations -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">🔐</div>
+          <h2 class="card-title">Operations</h2>
+        </div>
+
+        <div class="tabs">
+          <button class="tab active" onclick="switchAuthMode('token')" id="tab-token">Token Map</button>
+          <button class="tab" onclick="switchAuthMode('generator')" id="tab-generator">Generator</button>
+        </div>
+
+        <div id="auth-token-section">
+          <div class="input-group">
+            <label>Auth Tokens (JSON) - Map realm ID to JWT token</label>
+            <textarea id="auth-tokens-json" rows="4">{
+  "237bc280f9944b44b8a515962ff27787": "Please Login with Google to get googleIdToken",
+  "ea92c916cc0b454c98bc784816633fbb": "Please Login with Google to get googleIdToken",
+  "144733cee32840a29b5ae2629791eeef": "Please Login with Google to get googleIdToken"
+}</textarea>
+          </div>
+        </div>
+
+        <div id="auth-generator-section" style="display: none;">
+          <div class="input-group">
+            <label>Generator Config (JSON) - key is ed25519 PKCS8 private key (96 hex chars)</label>
+            <textarea id="generator-json" rows="4">{
+  "key": "302e020100300506032b657004220420b717b7950ba3a0d7ce27e39e2a30f7d7f6a3944f248e3501311d0d7b6e41f8c9",
+  "tenant": "JuiceBoxRealmTenantOneKey",
+  "version": 1
+}</textarea>
+          </div>
+        </div>
+
+        <!-- Google Login Section -->
+        <div class="input-group">
+          <label>User Identity</label>
+          <div id="google-login-section">
+            <div id="g_id_onload"
+                 data-client_id="244450898872-47ako15ia39518jku25tvmm1v3cft8k5.apps.googleusercontent.com"
+                 data-callback="handleGoogleLogin"
+                 data-auto_prompt="false">
+            </div>
+            <div class="g_id_signin"
+                 data-type="standard"
+                 data-size="large"
+                 data-theme="outline"
+                 data-text="sign_in_with"
+                 data-shape="rectangular"
+                 data-logo_alignment="left">
+            </div>
+            <button id="btn-dev-mode" class="btn-secondary" onclick="fetchDevTokens()" style="margin-left: 0.5rem;" title="Get tokens without Google login (dev only)">
+              🔧 Dev Mode
+            </button>
+            <div id="user-status" class="user-status" style="display: none;">
+              <span id="user-email"></span>
+              <button class="btn-secondary" onclick="handleGoogleLogout()" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; margin-left: 0.5rem;">Logout</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label>PIN</label>
+          <input type="text" id="pin" value="1234" placeholder="Enter PIN">
+        </div>
+
+        <div class="input-group">
+          <label>User Info (用户唯一标识，会成为 JWT sub)</label>
+          <input type="text" id="user-info" value="dev-user-001" placeholder="Login with Google or enter manually">
+        </div>
+
+        <div class="input-group">
+          <label>Secret</label>
+          <input type="text" id="secret" value="my-secret-data" placeholder="Secret to store">
+        </div>
+
+        <div class="input-group">
+          <label>Allowed Guesses</label>
+          <input type="number" id="allowed-guesses" value="5" min="1" max="255">
+        </div>
+
+        <div class="btn-group">
+          <button class="btn-primary" onclick="handleRegister()" id="btn-register" disabled>
+            📝 Register
+          </button>
+          <button class="btn-secondary" onclick="handleRecover()" id="btn-recover" disabled>
+            🔓 Recover
+          </button>
+          <button class="btn-danger" onclick="handleDelete()" id="btn-delete" disabled>
+            🗑️ Delete
+          </button>
+        </div>
+      </div>
+
+      <!-- Output Log -->
+      <div class="card output-section">
+        <div class="card-header">
+          <div class="card-icon">📋</div>
+          <h2 class="card-title">Output Log</h2>
+          <button class="btn-secondary" onclick="clearLog()" style="margin-left: auto;">Clear</button>
+        </div>
+
+        <div class="stat-grid">
+          <div class="stat-item">
+            <div class="stat-value" id="stat-requests">0</div>
+            <div class="stat-label">Operations</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="stat-success">0</div>
+            <div class="stat-label">Success</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="stat-errors">0</div>
+            <div class="stat-label">Errors</div>
+          </div>
+        </div>
+
+        <div class="output-container" id="output">
+          <div class="empty-state">No logs yet. Start by checking realm status.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
